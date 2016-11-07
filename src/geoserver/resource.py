@@ -155,6 +155,36 @@ class FeatureType(_ResourceBase):
     }
 
 
+class UnsavedFeatureType(FeatureType):
+
+    save_method = settings.POST
+
+    def __init__(self, catalog, name, workspace, datastore):
+        super(UnsavedFeatureType, self).__init__(
+            catalog,
+            workspace,
+            datastore,
+            name,
+        )
+        self.dirty.update(name=name, workspace=workspace, datastore=datastore)
+        self.writers = {
+            'name': write_string("name")
+        }
+
+    @property
+    def href(self):
+        path_parts = 'featuretypes'
+        workspace_name = getattr(self.workspace, 'name', self.workspace)
+        datastore_name = getattr(self.store, 'name', self.store)
+        path_parts = "workspaces/{}/datastores/{}/{}".format(workspace_name,
+                                                             datastore_name,
+                                                             path_parts)
+        return urljoin(
+            self.catalog.service_url,
+            "{}".format(path_parts)
+        )
+
+
 class CoverageDimension(object):
     def __init__(self, name, description, dimension_range):
         self.name = name
